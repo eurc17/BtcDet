@@ -7,7 +7,7 @@ import tqdm
 
 from btcdet.models import load_data_to_gpu
 from btcdet.utils import common_utils
-from ptflops.flops_counter import add_flops_counting_methods
+from ptflops.pytorch_engine import add_flops_counting_methods
 
 
 def statistics_info(cfg, ret_dict, metric, disp_dict):
