@@ -35,6 +35,7 @@ build_torch: .install_torch
 clean:
 	rm -rf $(ENPTY_TARGETS)
 	rm -rf spconv/dist
+	rm -rf ./build
 	rm ./poetry.lock
 	poetry env list | cut -f1 -d' ' | while read name; do \
 		poetry env remove "$$name"; \
@@ -44,6 +45,7 @@ clean_all:
 	rm -rf .clone_spconv
 	rm -rf $(ENPTY_TARGETS)
 	rm -rf spconv
+	rm -rf ./build
 	rm ./poetry.lock
 	poetry env list | cut -f1 -d' ' | while read name; do \
 		poetry env remove "$$name"; \
