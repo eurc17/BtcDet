@@ -1,1 +1,14 @@
 data/
+spconv/
+.clone_spconv
+.build_poetry
+.install_torch
+.install_spconv
+.install_btcdet
+poetry.lock
+build/
+btcdet.egg-info/
+btcdet/ops/iou3d_nms/
+btcdet/ops/pointnet2/
+btcdet/ops/roiaware_pool3d/
+btcdet/ops/roipoint_pool3d/

@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "btcdet"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+numpy = "<1.22.2"
+numba = "^0.55.1"
+tensorboardX = "^2.5"
+easydict = "^1.9"
+PyYAML = "^6.0"
+scikit-image = "^0.19.2"
+tqdm = "^4.63.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
