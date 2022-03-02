@@ -43,40 +43,15 @@ All the codes are tested in the following environment:
 
 
 ### Install
-b. Install the dependent libraries as follows:
+a. Install the python environment manager `poetry` by following instructions on its [github page](https://github.com/python-poetry/poetry).
 
-* Install the dependent python libraries: 
+b. Run the following command to create the python environment:
 ```
-pip install -r requirements.txt 
+make
 ```
 
-* Install the SparseConv library, we use the implementation from [`[spconv]`](https://github.com/traveller59/spconv). 
-    * The very recent spconv 2.+ has significant interface changes and some issues in operators. Therefore, we do not support it for now.
-    * If you use PyTorch 1.1, then make sure you install the `spconv v1.0` with ([commit 8da6f96](https://github.com/traveller59/spconv/tree/8da6f967fb9a054d8870c3515b1b44eca2103634)) instead of the latest one.
-    * If you use PyTorch 1.3+, then you need to install the `spconv v1.2`. As mentioned in v1.2.1 of [`spconv (https://github.com/traveller59/spconv/tree/v1.2.1)`](https://github.com/traveller59/spconv/tree/v1.2.1)
-    ```
-    git clone -b v1.2.1  https://github.com/traveller59/spconv.git --recursive
-    
-    cd spconv
-    
-    sudo apt-get install libboost-all-dev
-    
-    python setup.py bdist_wheel
-    
-    cd ./dist 
-    ```
-    Inside the `dist` directory, use pip to install generated whl file.
-    ```
-    pip install spconv-1.2.1-{your system info}.whl
-    ```
-    After that, you should first get out of the spconv directory, then do python import spconv to see if you installed it correctly.
-    
+c. Remember to add `poetry run` in front of `python` when you would like to run the python scripts.
 
-c. Install the operators in `BtcDet` by running the following command:
-```shell
-cd BtcDet
-python setup.py develop
-```
 
 ## Preparation
 
@@ -99,12 +74,12 @@ BtcDet
 
 * Generate the data infos by running the following command: 
 ```python 
-python -m btcdet.datasets.kitti.kitti_dataset create_kitti_infos tools/cfgs/dataset_configs/kitti_dataset.yaml
+poetry run python -m btcdet.datasets.kitti.kitti_dataset create_kitti_infos tools/cfgs/dataset_configs/kitti_dataset.yaml
 ```
 #### Generate Approximated complete object points:
 (Under `BtcDet` directory, execute:)
 ```python 
-python -m btcdet.datasets.multifindbestfit
+poetry run python -m btcdet.datasets.multifindbestfit
 ```
 
 
@@ -121,7 +96,7 @@ mkdir output
 
 mkdir output/kitti_car
 
-python train.py --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --output_dir ../output/kitti_car/ --batch_size 2 --gpu_str "0"
+poetry run python train.py --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --output_dir ../output/kitti_car/ --batch_size 2 --gpu_str "0"
 ```
 
 Multi gpu training, assuming you have 4 gpus:
@@ -135,7 +110,7 @@ cd tools/
 ```
 Single gpu testing for all saved checkpoints, assuming you have 4 gpus:
 ```
-python test.py --eval-all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0" --batch_size 2 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
+poetry run python test.py --eval-all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0" --batch_size 2 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
 ```
 
 Multi gpu testing for all saved checkpoints, assuming you have 4 gpus:
