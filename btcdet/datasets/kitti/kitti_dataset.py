@@ -13,11 +13,12 @@ from ..augmentor import multi_best_match_querier
 class KittiDataset(DatasetTemplate):
     def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None):
         """
+        Initialize dataset from config, creates a dataset for either training or testing.\n
         Args:
-            root_path:
-            dataset_cfg:
-            class_names:
-            training:
+            * root_path: the root path to store all data
+            * dataset_cfg: dataset config
+            * class_names: a list of class names
+            * training: the flag indicating this set is for * training or not\n
             logger:
         """
         super().__init__(
@@ -25,6 +26,7 @@ class KittiDataset(DatasetTemplate):
         )
         # print("dataset_cfg", dataset_cfg)
         self.frame_id = self.dataset_cfg.get("FRAME_ID", None)
+        # DATA_SPLIT defined in yaml file
         self.split = self.dataset_cfg.DATA_SPLIT[self.mode]
         # print("split", self.split, " root_path", self.root_path)
 
@@ -38,10 +40,14 @@ class KittiDataset(DatasetTemplate):
 
 
     def include_kitti_data(self, mode):
+        """
+        Get kitti infos from info path defined in dataset_cfg.
+        """
         if self.logger is not None:
             self.logger.info('Loading KITTI dataset')
         kitti_infos = []
         print("self.dataset_cfg.INFO_PATH", self.dataset_cfg.INFO_PATH)
+        # info_path: path to the information stored, pkl file, contains a list of something related to kitti info
         for info_path in self.dataset_cfg.INFO_PATH[mode]:
             info_path = self.root_path / info_path
             # print("info_path!!!!!!!!!!!!!!!!!!", info_path)
@@ -60,6 +66,9 @@ class KittiDataset(DatasetTemplate):
             self.logger.info('Total samples for KITTI dataset: %d' % (len(kitti_infos)))
 
     def set_split(self, split):
+        """
+        Splits the dataset by setting self.sample_id_list to certain set of ids
+        """
         super().__init__(
             dataset_cfg=self.dataset_cfg, class_names=self.class_names, training=self.training, root_path=self.root_path, logger=self.logger
         )
@@ -126,7 +135,18 @@ class KittiDataset(DatasetTemplate):
 
         return pts_valid_flag
 
-    def get_infos(self, num_workers=4, has_label=True, count_inside_pts=True, sample_id_list=None):
+    def get_infos(
+        self, num_workers=4, has_label=True, count_inside_pts=True, sample_id_list=None
+    ):
+        """
+        Runs process_single_scene() for each sample id.
+        * `info["point_cloud"]`: contains num_features = 4, lidar_idx set to sample id
+        * `info["image_info"]`: contains image_shape, image_idx set to sample id
+        * `info["calib"]`: contains calibration info for lidar camera coordinate transform.
+        * `info["annos"]`: if `has_label` is set, all annotations of objects will be included. lidar bboxes are also transformed and included.
+        * `annotation["num_points_in_gt"]`: if `has_label` and `count_inside_pts` are set to `True`, this will count the # of points inside both lidar bbox and camera FOV. \n
+        Note, `annotation["num_points_in_gt"]` was not viewable inside `info["annos"]` due to incorrect placing of code.
+        """
         import concurrent.futures as futures
 
         def process_single_scene(sample_idx):
