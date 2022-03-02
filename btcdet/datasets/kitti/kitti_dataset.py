@@ -619,6 +619,9 @@ class KittiDataset(DatasetTemplate):
 
 
 def create_kitti_infos(dataset_cfg, class_names, data_path, save_path, workers=1):
+    """
+    Creates datasets and store its infos inside .pkl file.
+    """
     dataset = KittiDataset(
         dataset_cfg=dataset_cfg,
         class_names=class_names,
