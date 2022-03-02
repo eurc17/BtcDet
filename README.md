@@ -110,12 +110,12 @@ cd tools/
 ```
 Single gpu testing for all saved checkpoints, assuming you have 4 gpus:
 ```
-poetry run python test.py --eval-all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0" --batch_size 2 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
+poetry run python test.py --eval_all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0" --batch_size 2 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
 ```
 
 Multi gpu testing for all saved checkpoints, assuming you have 4 gpus:
 ```
-bash scripts/dist_test.sh 4 --eval-all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0,1,2,3" --batch_size 8 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
+bash scripts/dist_test.sh 4 --eval_all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0,1,2,3" --batch_size 8 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
 ```
 
 Multi gpu testing a specific checkpoint, assuming you have 4 gpus and checkpoint_39 is your best checkpoint :
