@@ -250,7 +250,7 @@ class KittiDataset(DatasetTemplate):
                 )
                 annotations["gt_boxes_lidar"] = gt_boxes_lidar
 
-                info['annos'] = annotations
+                # info["annos"] = annotations
 
                 if count_inside_pts:
                     points = self.get_lidar(sample_idx)
@@ -267,7 +267,8 @@ class KittiDataset(DatasetTemplate):
                     for k in range(num_objects):
                         flag = box_utils.in_hull(pts_fov[:, 0:3], corners_lidar[k])
                         num_points_in_gt[k] = flag.sum()
-                    annotations['num_points_in_gt'] = num_points_in_gt
+                    annotations["num_points_in_gt"] = num_points_in_gt
+                info["annos"] = annotations
 
             return info
 
