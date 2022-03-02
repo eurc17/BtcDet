@@ -135,7 +135,7 @@ cd tools/
 ```
 Single gpu testing for all saved checkpoints, assuming you have 4 gpus:
 ```
-python test.sh 4 --eval-all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0" --batch_size 2 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
+python test.py --eval-all --cfg_file ./cfgs/model_configs/btcdet_kitti_car.yaml --gpu_str "0" --batch_size 2 --output_dir ../output/kitti_car/ --ckpt_dir  ../output/kitti_car/ckpt/
 ```
 
 Multi gpu testing for all saved checkpoints, assuming you have 4 gpus:
