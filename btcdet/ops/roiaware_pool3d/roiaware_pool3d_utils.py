@@ -8,17 +8,19 @@ from . import roiaware_pool3d_cuda
 
 def points_in_boxes_cpu(points, boxes):
     """
+    Get an array that represents whether a point is in a box.\n
     Args:
         points: (num_points, 3)
         boxes: [x, y, z, dx, dy, dz, heading], (x, y, z) is the box center, each box DO NOT overlaps
     Returns:
-        point_indices: (N, num_points)
+        point_indices: (N, num_points), N is len(boxes)
     """
     assert boxes.shape[1] == 7
     assert points.shape[1] == 3
     points, is_numpy = common_utils.check_numpy_to_torch(points)
     boxes, is_numpy = common_utils.check_numpy_to_torch(boxes)
 
+    # creates a new tensor with shape (boxes.shape[0], points.shape[0])
     point_indices = points.new_zeros((boxes.shape[0], points.shape[0]), dtype=torch.int)
     roiaware_pool3d_cuda.points_in_boxes_cpu(boxes.float().contiguous(), points.float().contiguous(), point_indices)
 

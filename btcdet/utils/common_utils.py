@@ -12,6 +12,11 @@ import torch.multiprocessing as mp
 
 
 def check_numpy_to_torch(x):
+    """
+    Check if `x` is a `numpy.ndarray`\n
+    if true => return (torch tensor converted from `x`, `True`)\n
+    else => return (`x`, `False`)
+    """
     if isinstance(x, np.ndarray):
         return torch.from_numpy(x).float(), True
     return x, False
