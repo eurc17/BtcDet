@@ -375,6 +375,19 @@ class KittiDataset(DatasetTemplate):
     def create_groundtruth_database(
         self, info_path=None, used_classes=None, split="train"
     ):
+        """
+        Dumps `kitti_dbinfos_{train/test}`, a dictionary  of dictionary indexed by object name, with each sub-dictionary containing information about an object:
+            * `name`: Class type of the object
+            * `path`: path to the gt_database file
+            * `image_idx`: sample(frame) index
+            * `gt_idx`: The object id in the frame
+            * `box3d_lidar`: The 3d bounding box of the object
+            * `num_points_in_gt`: The # of points in gt bbox
+            * `difficulty`: The difficulty level defined by dataset
+            * `bbox`: The 2d bounding box
+            * `score`: Only for results: Float, indicating confidence in detection, needed for p/r curves, higher is better. \n
+        Creates `gt_database{/_test}` folder, write the lidar ground truth points (position subtracted with gt-box center) of each object to a file under the folder, pointed to by `path` in `kitti_dbinfos_{train/test}`.
+        """
         import torch
 
         database_save_path = Path(self.root_path) / (
@@ -389,6 +402,7 @@ class KittiDataset(DatasetTemplate):
             infos = pickle.load(f)
 
         for k in range(len(infos)):
+            # a sample is a frame
             print("gt_database sample: %d/%d" % (k + 1, len(infos)))
             info = infos[k]
             sample_idx = info["point_cloud"]["lidar_idx"]
@@ -407,8 +421,9 @@ class KittiDataset(DatasetTemplate):
             for i in range(num_obj):
                 filename = "%s_%s_%d.bin" % (sample_idx, names[i], i)
                 filepath = database_save_path / filename
+                # extract gt_points inside the gt box
                 gt_points = points[point_indices[i] > 0]
-
+                # subtract point pos with gt_box center
                 gt_points[:, :3] -= gt_boxes[i, :3]
                 with open(filepath, "w") as f:
                     gt_points.tofile(f)
