@@ -390,10 +390,14 @@ def single_rotate_points_along_z(points, angle):
     return points_rot
 
 
-def get_iou(box_tensor):
+def get_iou(box_tensor, box_dims_lst):
+    """
+    Returns the IoU of each boxes with all the other boxes. Should be of shape `NxN`, where `N` is the `len(box_dims_lst)`
+    """
     limit = len(box_dims_lst)
     start = 0
     iou3d_lst = []
+    # Split the limit into 10 parts and calculate one part at a time
     for i in range(11):
         end = min(start + limit // 10, limit)
         iou3d = iou3d_nms_utils.boxes_iou3d_gpu(box_tensor[start:end, :], box_tensor)
@@ -884,7 +888,9 @@ if __name__ == "__main__":
             apply_mirror=apply_mirror_lst[i],
         )
         box_tensor = torch.as_tensor(box_dims_lst, device="cuda", dtype=torch.float32)
-        iou3d = get_iou(box_tensor)
+        # Gets the IoU betweeen each pair of boxes, where the boxes only have size and all of their center & heading are the same
+        iou3d = get_iou(box_tensor, box_dims_lst)
+        # list of range (minx, miny, minz), and (maxx, maxy, maxz) of mirrored_pnts in one object
         range_mirrored = np.array(
             [
                 np.concatenate(
@@ -898,13 +904,15 @@ if __name__ == "__main__":
                 if mirrored_pnts_lst[i].shape[0] > 0
             ]
         )
+        # The total range of all mirrored objects
         allrange = np.concatenate(
             [
-                np.min(range_mirrored[..., :3], axis=0),
-                np.max(range_mirrored[..., 3:], axis=0),
+                np.min(range_mirrored[..., :3], axis=0),  # (minx, miny, minz)
+                np.max(range_mirrored[..., 3:], axis=0),  # (maxx, maxy, maxz)
             ],
             axis=-1,
         )
+        # nx: number of voxels in axis x; ny: number of voxels in axis y
         nx, ny = np.ceil((allrange[3] - allrange[0]) / voxel_size[0]).astype(
             np.int
         ), np.ceil((allrange[4] - allrange[1]) / voxel_size[1]).astype(np.int32)
