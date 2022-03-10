@@ -136,9 +136,15 @@ def coords3inds(coords, ny, nx):
     return inds.astype(np.int32)
 
 
-
 def mirror(pnts, lastchannel=3):
-    mirror_pnts = np.concatenate([pnts[...,0:1], -pnts[...,1:2], pnts[...,2:lastchannel]], axis=-1)
+    """
+    Mirror the `pnts` along y-axis, and remove the mirrored points who are too close to original point.\n
+    Return:
+        * original points concatenated with the mirrored points along `axis 0`.
+    """
+    mirror_pnts = np.concatenate(
+        [pnts[..., 0:1], -pnts[..., 1:2], pnts[..., 2:lastchannel]], axis=-1
+    )
     mirror_pnts = remove_voxelpnts(pnts, mirror_pnts, nearest_dist=0.05)
     return np.concatenate([pnts, mirror_pnts], axis=0)
 
@@ -417,9 +423,15 @@ def find_multi_best_match_boxpnts(sorted_iou, gt_box, cur_mirrored_pnts_lst, cur
     return bm_pnts, aug_coords_num
 
 
-def remove_voxelpnts(sourcepnts, target_pnts, voxel_size=np.array([0.08, 0.08, 0.08]), nearest_dist=None):
-    augpnts = target_pnts[:,:3]
-    gtpnts = sourcepnts[:,:3]
+def remove_voxelpnts(
+    sourcepnts, target_pnts, voxel_size=np.array([0.08, 0.08, 0.08]), nearest_dist=None
+):
+    """
+    If given `nearest_dist`, remove `target_pnts` whose distances with `sourcepnts` are <= `neareest_dist` and return the remaining `target_pnts`.\n
+    Else, it will calculate the maximum range created by `sourcepnts` and `target_pnts` and determine whether the voxels where `target_pnts` reside in overlap with the voxels where `sourcepnts` reside in.
+    """
+    augpnts = target_pnts[:, :3]
+    gtpnts = sourcepnts[:, :3]
     if nearest_dist is None:
         min_gtpnts, max_gtpnts, min_augpnts, max_augpnts = np.min(gtpnts, axis=0), np.max(gtpnts, axis=0), np.min(augpnts, axis=0), np.max(augpnts, axis=0)
         range = np.concatenate([np.minimum(min_gtpnts, min_augpnts), np.maximum(max_gtpnts, max_augpnts)], axis=0)

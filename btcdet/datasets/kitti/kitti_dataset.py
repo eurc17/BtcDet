@@ -376,9 +376,9 @@ class KittiDataset(DatasetTemplate):
         self, info_path=None, used_classes=None, split="train"
     ):
         """
-        Dumps `kitti_dbinfos_{train/test}`, a dictionary  of dictionary indexed by object name, with each sub-dictionary containing information about an object:
+        Dumps `kitti_dbinfos_{train/val} into pkl file`, a dictionary  of dictionary indexed by object name, with each sub-dictionary containing information about an object:
             * `name`: Class type of the object
-            * `path`: path to the gt_database file
+            * `path`: path to the gt_database file, starts from gt_database/xxxx.bin
             * `image_idx`: sample(frame) index
             * `gt_idx`: The object id in the frame
             * `box3d_lidar`: The 3d bounding box of the object
@@ -386,7 +386,7 @@ class KittiDataset(DatasetTemplate):
             * `difficulty`: The difficulty level defined by dataset
             * `bbox`: The 2d bounding box
             * `score`: Only for results: Float, indicating confidence in detection, needed for p/r curves, higher is better. \n
-        Creates `gt_database{/_test}` folder, write the lidar ground truth points (position subtracted with gt-box center) of each object to a file under the folder, pointed to by `path` in `kitti_dbinfos_{train/test}`.
+        Creates `gt_database{/_val}` folder, write the lidar ground truth points (position subtracted with gt-box center) of each object to a file under the folder, pointed to by `path` in `kitti_dbinfos_{train/val}`.
         """
         import torch
 
