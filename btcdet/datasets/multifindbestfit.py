@@ -42,7 +42,7 @@ def extract_allpnts(
     Grab points of objects with `type` matched to input and their info from `kitti_dbinfos_%s.pkl`, where s is the split name.\n
     Return:
         * `all_db_infos_lst`: A list of all dictionary of objects stored in `kitti_dbinfos_%s.pkl`.
-        * `box_dims_lst`: A list of (dx, dy, dz), i.e., the size of the box.
+        * `box_dims_lst`: A list of (0, 0, 0, dx, dy, dz, 0), i.e., the size of the box with position set to origin and heading set to 0.
         * `pnts_lst`: A list of normalized(aligned with x axis, 0 degree) points of objects, heading aligned to 0.
         * `mirrored_pnts_lst`: `pnts_lst` and with the mirrored points attached if `apply_mirror` is set to `True`.
     """
@@ -528,25 +528,30 @@ def find_best_match_boxpnts(
     save=False,
 ):
     """
-    :param all_db_infos_lst: list of info
-    :param box_dims_lst: M * 7
-    :param sorted_iou: sorted top 800 iou: M * 800
-    :param pnt_thresh_best_iou_indices: mirror car indices with coords num > 400 and top 800 iou: M * 800
-    :param mirrored_pnts_lst: M lst
-    :param coords_num: M
-    :param occ_map: M * dim
-    :param max_num_bm: 5
+    Find the best match points inside other boxes and add to the current object, and store the augmented points into a .pkl file. This process is repeated for all objects.
+    The stored points have headings set to 0.
+    Parameters:
+        * `all_db_infos_lst`: list of info from `kitti_dbinfos_%s.pkl`, where s is the split name.
+        * `box_dims_lst`: Shape = (M * 7), A list of (0, 0, 0, dx, dy, dz, 0), i.e., the size of the box with position set to origin and heading set to 0.
+        * `sorted_iou`: sorted top 800 iou. Shape = (M * 800)
+        * `pnt_thresh_best_iou_indices`: mirror car indices with top 800 iou: M * 800
+        * `mirrored_pnts_lst`: M lst
+        * `coords_num`: M
+        * `occ_map`: M * dim
+        * `max_num_bm`: 5
     :return:
     """
     for car_id in range(0, len(mirrored_pnts_lst)):
         cur_mirrored_pnts_lst = [mirrored_pnts_lst[car_id]]
         cur_pnts_lst = [pnts_lst[car_id]]
         print("pnt_thresh_best_iou_indices", pnt_thresh_best_iou_indices.shape)
+        # might cause error if car_id exceeds 800
         picked_indices = tuple(pnt_thresh_best_iou_indices[car_id].cpu())
         selected_mirrored_pnts_lst = [mirrored_pnts_lst[i] for i in picked_indices]
         selected_pnts_lst = [pnts_lst[i] for i in picked_indices]
         # print("pnt_thresh_best_iou_indices[car_id]", pnt_thresh_best_iou_indices[car_id].shape, coords_num.shape)
         cur_occ_map = occ_map[car_id]
+        # get occupancy map where the selected mirrored points for each top K IoU objects are filtered with the `car_id` box
         selected_occ_map = torch.stack(
             [
                 torch.as_tensor(
@@ -604,6 +609,9 @@ def find_best_match_boxpnts(
 
 
 def remove_outofbox(pnts, box):
+    """
+    Remove `pnts` that are out of the bounding `box`
+    """
     dim = box[3:6]
     point_in_box_mask = np.logical_and(pnts <= dim * 0.5, pnts >= -dim * 0.5)
     # N, M
@@ -952,7 +960,7 @@ if __name__ == "__main__":
         coord_inds = torch.nonzero(coords_num > PNT_THRESH_lst[i])[..., 0]
         print("coord_inds", coord_inds.shape)
         iou3d = iou3d[:, coord_inds]
-        # get top K, where K is at most 800, iou3d and their indices
+        # get top K, where K is at most 800, iou3d and their indices for each object
         sorted_iou, best_iou_indices = torch.topk(
             iou3d, min(800, len(iou3d)), dim=-1, sorted=True, largest=True
         )
