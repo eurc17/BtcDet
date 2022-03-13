@@ -43,7 +43,7 @@ def extract_allpnts(
     Return:
         * `all_db_infos_lst`: A list of all dictionary of objects stored in `kitti_dbinfos_%s.pkl`.
         * `box_dims_lst`: A list of (dx, dy, dz), i.e., the size of the box.
-        * `pnts_lst`: A list of normalized(aligned with x axis, 0 degree) points of objects.
+        * `pnts_lst`: A list of normalized(aligned with x axis, 0 degree) points of objects, heading aligned to 0.
         * `mirrored_pnts_lst`: `pnts_lst` and with the mirrored points attached if `apply_mirror` is set to `True`.
     """
     all_db_infos_lst = []
@@ -845,10 +845,16 @@ def extra_occ(cur_occ_map, selected_occ_map):
 
 
 def space_occ_voxelpnts(sourcepnts, allrange, nx, ny, voxel_size=[0.08, 0.08, 0.08]):
+    """
+    Return:
+        * `occmap`: An occupation map with shape (nx, ny), with each cell as numpy.int32. The cell will contain 1 if occupied, otherwise it will be 0.\n
+    Note: If `voxel_size` divides `allrange`, an error will occur due to wrong indexing.
+    """
     occmap = np.zeros([nx, ny], dtype=np.int32)
     if sourcepnts.shape[0] > 0:
         voxel_size = np.array(voxel_size)
         gtpnts = sourcepnts[:, :3]
+        # get discrete gtpnt position with unit = voxel
         gtpnts_ind = np.floor(
             (gtpnts - np.expand_dims(allrange[:3], axis=0))
             / np.expand_dims(voxel_size, axis=0)
@@ -861,6 +867,14 @@ def space_occ_voxelpnts(sourcepnts, allrange, nx, ny, voxel_size=[0.08, 0.08, 0.
 
 
 if __name__ == "__main__":
+    """
+    Overall description:
+        1. Load all points for cars, pedestrian, and bike respectively
+        2. The points are all normalized to have headings of 0 degree and with part of the bottom filtered
+        3. IoU between each pair of boxes are calculated, with all center of the boxes moved to origin and heading being set to 0 degree.
+        4. Occupation map for each object is calculated, with the map being the point's full range divided by voxel size.
+        5. The occupation map is used to find how many voxels is being occupied by the object. If that value exceeds threshold, the IoU of its box will be sorted by high to low.
+    """
     vis = False
     save = True  # False
     voxel_size = [0.16, 0.16, 0.16]
@@ -904,7 +918,7 @@ if __name__ == "__main__":
                 if mirrored_pnts_lst[i].shape[0] > 0
             ]
         )
-        # The total range of all mirrored objects
+        # The total range considering all mirrored objects
         allrange = np.concatenate(
             [
                 np.min(range_mirrored[..., :3], axis=0),  # (minx, miny, minz)
@@ -916,6 +930,7 @@ if __name__ == "__main__":
         nx, ny = np.ceil((allrange[3] - allrange[0]) / voxel_size[0]).astype(
             np.int
         ), np.ceil((allrange[4] - allrange[1]) / voxel_size[1]).astype(np.int32)
+        # A stack of occupation map for each mirrored points
         occ_map = torch.stack(
             [
                 torch.as_tensor(
@@ -933,9 +948,11 @@ if __name__ == "__main__":
         print(
             "coords_num", coords_num.shape, torch.min(coords_num), torch.max(coords_num)
         )
+        # get coordinate indexes where an object's total # of occupied voxel > PNT_THRESH_lst[i]
         coord_inds = torch.nonzero(coords_num > PNT_THRESH_lst[i])[..., 0]
         print("coord_inds", coord_inds.shape)
         iou3d = iou3d[:, coord_inds]
+        # get top K, where K is at most 800, iou3d and their indices
         sorted_iou, best_iou_indices = torch.topk(
             iou3d, min(800, len(iou3d)), dim=-1, sorted=True, largest=True
         )
