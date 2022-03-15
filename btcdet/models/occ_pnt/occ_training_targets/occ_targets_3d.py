@@ -137,7 +137,7 @@ class OccTargets3D(OccTargetsTemplate):
         )  # exclude original occupied
         mirr_res_mtrx = mirr_res_mtrx * (1 - voxelwise_mask).unsqueeze(1)
 
-        if self.model_cfg.TARGETS.TMPLT:
+        if self.model_cfg.TARGETS.TMPLT:  # default = True
             bm_voxelwise_mask, bm_res_mtrx = self.get_bm_voxelwise_mask_res(
                 batch_dict, bs, gt_boxes_num, gt_boxes
             )
