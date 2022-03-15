@@ -58,8 +58,8 @@ class Detector3DTemplate(nn.Module):
 
         self.occ_modules = nn.Module()
         self.det_modules = nn.Module()
-        self.clamp_max = self.dataset.dataset_cfg.get("CLAMP", None)
-        self.occ_dim = self.dataset.occ_dim
+        self.clamp_max = self.dataset.dataset_cfg.get("CLAMP", None)  # default = None
+        self.occ_dim = self.dataset.occ_dim  # default = None
         self.print = False
 
     def filter_by_bind(self, trgt_binds, binds, points):
