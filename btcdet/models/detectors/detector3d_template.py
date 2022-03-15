@@ -69,6 +69,9 @@ class Detector3DTemplate(nn.Module):
         return points
 
     def create_subvox_loc(self):
+        """
+        Return voxel centers in cartesian coordinates in 3D and flattened (by averaging values) 2D
+        """
         nx, ny, nz = self.dataset.occ_grid_size
         x_origin = self.dataset.dataset_cfg.OCC.POINT_CLOUD_RANGE[0]
         y_origin = self.dataset.dataset_cfg.OCC.POINT_CLOUD_RANGE[1]
@@ -84,10 +87,10 @@ class Detector3DTemplate(nn.Module):
             0, ...
         ]  # 3 sphere zyx nz ny nx
         all_voxel_centers = coords_utils.uvd2absxyz(
-            all_voxel_centers[2, ...],
-            all_voxel_centers[1, ...],
-            all_voxel_centers[0, ...],
-            self.dataset.dataset_cfg.OCC.COORD_TYPE,
+            all_voxel_centers[2, ...],  # x
+            all_voxel_centers[1, ...],  # y
+            all_voxel_centers[0, ...],  # z
+            self.dataset.dataset_cfg.OCC.COORD_TYPE,  # default = cylinder
             dim=-1,
         )  #  nz X ny X nx X 3
         all_voxel_centers_2d = torch.mean(all_voxel_centers[:, :, :, :2], dim=0).view(
@@ -106,6 +109,9 @@ class Detector3DTemplate(nn.Module):
         self.global_step += 1
 
     def build_networks(self):
+        """
+        Build networks according to `self.module_topology`
+        """
         model_info_dict = {
             "occ_module_list": [],
             "det_module_list": [],
@@ -134,6 +140,9 @@ class Detector3DTemplate(nn.Module):
         return model_info_dict["occ_module_list"], model_info_dict["det_module_list"]
 
     def build_occ(self, model_info_dict):
+        """
+        Build all occ modules defined in `self.occ_module_topology` and add the modules to `self.occ_modules`
+        """
         if self.model_cfg.get("OCC", None) is None:
             return None, model_info_dict
 

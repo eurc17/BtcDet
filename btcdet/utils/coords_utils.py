@@ -299,6 +299,9 @@ def sphere_uvd2absxyz_np(sphere_x, sphere_y, sphere_z, dim=-1):
 
 
 def cylinder_uvd2absxyz(cylin_x, cylin_y, cylin_z, dim=-1):
+    """
+    Converts cylinder coordinates to absolute value cartesian
+    """
     xydist = cylin_x
     carte_coords_absx = xydist * torch.cos(cylin_y * np.pi / 180.0)
     carte_coords_absy = -xydist * torch.sin(cylin_y * np.pi / 180.0)
@@ -366,6 +369,9 @@ def cartesian_occ_coords(cartesian_points, type, perm="xyz"):
 
 
 def uvd2absxyz(coord_x, coord_y, coord_z, type, dim=-1):
+    """
+    Converts source type coordinates to absolute valued cartesian
+    """
     if type == "sphere":
         return sphere_uvd2absxyz(coord_x, coord_y, coord_z, dim=dim)
     elif type == "cylinder":
