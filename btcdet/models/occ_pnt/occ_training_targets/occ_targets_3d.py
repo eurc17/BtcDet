@@ -222,6 +222,7 @@ class OccTargets3D(OccTargetsTemplate):
         bm_voxelwise_mask = torch.zeros(
             [bs, self.nz, self.ny, self.nx], dtype=torch.uint8, device="cuda"
         )
+        # bm_points added during augmentation, see BtcDet/btcdet/datasets/augmentor/multi_best_match_querier.py
         if "bm_points" in batch_dict and len(batch_dict["bm_points"]) > 0:
             bm_binds, bm_carte_points = (
                 batch_dict["bm_points"][..., 0:1].to(torch.int64),

@@ -47,6 +47,9 @@ class MltBestMatchQuerier(object):
         return np.concatenate([pnts, mirror_pnts], axis=0)
 
     def add_gtbox_best_match_points_to_scene(self, data_dict):
+        """
+        Load best match points and add the original rotation back to the normalized points stored in pkl file.
+        """
         obj_points_list = []
         aug_boxes_num = (
             data_dict["aug_boxes_image_idx"].shape[0]
